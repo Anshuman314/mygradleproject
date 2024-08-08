@@ -1,3 +1,10 @@
+import java.io.InputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.ByteArrayOutputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.Map;
+
 private static String render(Map<String, Object> model, String templatePath) throws IOException {
         try (InputStream inputStream = Main.class.getClassLoader().getResourceAsStream(templatePath)) {
             if (inputStream == null) {
