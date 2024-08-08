@@ -1,0 +1,14 @@
+plugins {
+    id 'java'
+}
+
+repositories {
+    maven {
+        url "https://<your-artifactory-instance>.jfrog.io/artifactory/<repository-name>"
+        credentials {
+            username = "${artifactory_username}"
+            password = "${artifactory_password}"
+        }
+    }
+    mavenCentral() // Keep Maven Central if you still need to pull other dependencies
+}
