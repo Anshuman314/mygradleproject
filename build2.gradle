@@ -1,0 +1,100 @@
+plugins {
+    id 'java'
+    id 'application'
+    id 'maven-publish'
+    id 'com.jfrog.artifactory' version '4.29.1'
+}
+
+group 'org.example'
+version '1.0.0'
+
+// repositories {
+//     mavenCentral()
+// }
+
+artifactory {
+    contextUrl = 'http://localhost:8082/artifactory'  // Artifactory URL
+    // allowInsecureProtocol = true
+    publish {
+        repository {
+            // allowInsecureProtocol = true
+            repoKey = 'libs-release-local'  // Replace with your repository key
+            username = project.findProperty("artifactory_user") ?: "admin"
+            password = project.findProperty("artifactory_password") ?: "Passw0rd"
+        }
+
+        defaults {
+            publications('mavenJava')
+            publishArtifacts = true
+            publishPom = true
+        }
+    }
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+        }
+    }
+}
+
+tasks.named("artifactoryPublish").configure {
+    dependsOn tasks.named("build")
+}
+
+
+repositories {
+    maven {
+        url "http://localhost:8082/artifactory/libs-release-local"
+        allowInsecureProtocol = true
+        credentials {
+            username = 'admin'
+            password = 'Passw0rd'
+        }
+    }
+    mavenCentral()
+}
+
+// dependencies {
+//     implementation 'group:artifact:version'
+// }
+
+
+dependencies {
+    implementation 'com.sparkjava:spark-core:2.9.3'
+    implementation 'org.slf4j:slf4j-simple:2.0.7'
+    // implementation 'org.springframework.boot:spring-boot-starter-web'
+    // implementation 'com.github.jknack:handlebars-spring-boot-starter'
+}
+
+application {
+    mainClassName = 'org.example.cart.Main'
+}
+
+jar {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    manifest {
+        attributes(
+            'Main-Class': 'org.example.cart.Main'
+        )
+    }
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+}
+
+sourceSets {
+    main {
+        resources {
+            srcDir 'src/main/resources'
+        }
+    }
+}
+tasks.withType(org.gradle.api.tasks.Copy) {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+clean {
+    delete rootProject.buildDir
+}
