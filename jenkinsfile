@@ -1,0 +1,46 @@
+pipeline {
+    agent any
+    environment {
+        path = " "
+    }
+
+    environment {
+        DOCKER_IMAGE = "my-java-app"
+        REGISTRY = "your-docker-registry-url"
+        REGISTRY_CREDENTIALS = "docker-credentials-id"
+    }
+
+    stages {
+        stage('Build') {
+            steps {
+                script {
+                    sh 'gradle clean build'
+                }
+            }
+        }
+        stage('Docker Build') {
+            steps {
+                script {
+                    docker.build("${DOCKER_IMAGE}:latest")
+                }
+            }
+        }
+        stage('Docker Push') {
+            steps {
+                script {
+                    docker.withRegistry("${REGISTRY}", "${REGISTRY_CREDENTIALS}") {
+                        docker.image("${DOCKER_IMAGE}:latest").push()
+                    }
+                }
+            }
+        }
+        stage('Deploy') {
+            steps {
+                script {
+                    // Deploy steps, e.g., docker run command, or Kubernetes deployment, etc.
+                    sh "docker run -d -p 8080:8080 ${DOCKER_IMAGE}:latest"
+                }
+            }
+        }
+    }
+}
